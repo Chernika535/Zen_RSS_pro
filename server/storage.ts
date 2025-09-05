@@ -42,14 +42,26 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultConfig() {
+    const sourceUrlEnv = process.env.SOURCE_FEED_URL;
+    const siteLinkEnv = process.env.SITE_LINK;
+    const titleEnv = process.env.ZEN_TITLE;
+    const descriptionEnv = process.env.ZEN_DESCRIPTION;
+    const langEnv = process.env.ZEN_LANG;
+    const intervalEnv = process.env.CHECK_INTERVAL;
+
+    const fallbackSource = sourceUrlEnv ?? "https://example.com/feed.xml";
+    const siteLink = siteLinkEnv ?? (() => {
+      try { return new URL(fallbackSource).origin; } catch { return "https://example.com"; }
+    })();
+
     const defaultConfig: RssConfig = {
       id: randomUUID(),
-      sourceUrl: "https://neiromantra.ru/12583-feed.xml",
-      title: "RSS to Zen Bridge",
-      description: "Automated RSS to Yandex Zen publishing service",
-      siteLink: "https://neiromantra.ru",
-      language: "ru",
-      checkInterval: "30",
+      sourceUrl: fallbackSource,
+      title: titleEnv ?? "RSS to Zen Bridge",
+      description: descriptionEnv ?? "Automated RSS to Yandex Zen publishing service",
+      siteLink,
+      language: langEnv ?? "ru",
+      checkInterval: intervalEnv ?? "30",
       isActive: true,
       lastChecked: null,
       createdAt: new Date(),
