@@ -56,7 +56,7 @@ export class RSSProcessor {
   }
 
   private async processRSSItem(item: RSSItem): Promise<void> {
-    if (!item.title || !item.link || !item.pubDate) {
+    if (!item.title || !item.link) {
       console.warn('Skipping item with missing required fields:', item.title);
       return;
     }
@@ -72,13 +72,14 @@ export class RSSProcessor {
       // Extract and sanitize content
       const content = this.extractAndSanitizeContent(item);
       const images = this.extractImages(content);
-      const categories = this.sanitizeCategories(item.categories || []);
+      let categories = this.sanitizeCategories(item.categories || []);
+      if (categories.length === 0) { categories = ['Технологии']; }
 
       const article: InsertArticle = {
         title: item.title,
         link: item.link,
         author: item.author || 'Unknown',
-        pubDate: new Date(item.pubDate),
+        pubDate: new Date(item.pubDate || Date.now()),
         category: categories,
         description: this.extractDescription(item),
         content: content,
@@ -200,7 +201,7 @@ export class RSSProcessor {
   private checkZenCompliance(article: any): boolean {
     // Basic Zen compliance checks
     if (!article.title || article.title.length < 10) return false;
-    if (!article.content || article.content.length < 100) return false;
+    if (!article.content || article.content.length < 80) return false;
     if (article.content.length > 50000) return false; // Zen limit
     
     return true;
